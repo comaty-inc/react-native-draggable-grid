@@ -1,6 +1,6 @@
 .idea
 node_modules
-built
+# built
 demo
 .watchmanconfig
 yarn-error.log
