@@ -1,16 +1,18 @@
+/** @format */
+
 import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  PanResponder,
   Animated,
-  StyleSheet,
-  StyleProp,
   GestureResponderEvent,
+  PanResponder,
   PanResponderGestureState,
+  StyleProp,
+  StyleSheet,
   ViewStyle,
 } from 'react-native'
 import { Block } from './block'
-import { findKey, findIndex, differenceBy } from './utils'
+import { differenceBy, findIndex, findKey } from './utils'
 
 export interface IOnLayoutEvent {
   nativeEvent: { layout: { x: number; y: number; width: number; height: number } }
@@ -20,6 +22,7 @@ interface IBaseItemType {
   key: string | number
   disabledDrag?: boolean
   disabledReSorted?: boolean
+  onPress?: () => Promise<void>
 }
 
 export interface IDraggableGridProps<DataType extends IBaseItemType> {
@@ -34,7 +37,7 @@ export interface IDraggableGridProps<DataType extends IBaseItemType> {
   onDragging?: (gestureState: PanResponderGestureState) => void
   onDragRelease?: (newSortedData: DataType[]) => void
   onResetSort?: (newSortedData: DataType[]) => void
-  delayLongPress?:number
+  delayLongPress?: number
 }
 interface IMap<T> {
   [key: string]: T
@@ -53,7 +56,7 @@ interface IItem<DataType> {
 }
 let activeBlockOffset = { x: 0, y: 0 }
 
-export const DraggableGrid = function<DataType extends IBaseItemType>(
+export const DraggableGrid = function <DataType extends IBaseItemType>(
   props: IDraggableGridProps<DataType>,
 ) {
   const [blockPositions] = useState<IPositionOffset[]>([])
@@ -366,7 +369,12 @@ export const DraggableGrid = function<DataType extends IBaseItemType>(
   const itemList = items.map((item, itemIndex) => {
     return (
       <Block
-        onPress={onBlockPress.bind(null, itemIndex)}
+        onPress={() => {
+          onBlockPress.bind(null, itemIndex)()
+          if (item.itemData.onPress) {
+            item.itemData.onPress()
+          }
+        }}
         onLongPress={setActiveBlock.bind(null, itemIndex, item.itemData)}
         panHandlers={panResponder.panHandlers}
         style={getBlockStyle(itemIndex)}
